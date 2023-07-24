@@ -98,6 +98,37 @@ class DishesController {
       .orderBy("name");
     return response.status(200).json({ ...dish, ingredients });
   }
+
+  async update(request, response) {
+    const { id } = request.params;
+    const { name, category, ingredients, price, description } = request.body;
+
+    if (!name || !category || !ingredients || !price || !description) {
+      throw new AppError("É necessário informar todos os campos...", 400);
+    }
+
+    const dish = await knex("dishes").where({ id }).first();
+    dish.name = name ?? dish.name;
+    dish.description = description ?? dish.description;
+    dish.price = price ?? dish.price;
+    dish.category = category ?? dish.category;
+
+    await knex("dishes").where({ id }).update(dish);
+
+    const ingredientsInsert = ingredients.map((ingredient) => {
+      return {
+        dish_id: dish.id,
+        name: ingredient,
+      };
+    });
+
+    await knex("ingredients").where({ dish_id: dish.id }).delete();
+    await knex("ingredients").insert(ingredientsInsert);
+
+    return response
+      .status(201)
+      .json({ message: "Prato atualizado com sucesso." });
+  }
 }
 
 module.exports = DishesController;
