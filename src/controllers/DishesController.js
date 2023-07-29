@@ -1,12 +1,25 @@
 const knex = require("../database/knex");
+const DiskStorage = require("../providers/DiskStorage");
 const AppError = require("../utils/AppError");
 
 class DishesController {
   async create(request, response) {
     try {
       const { name, description, price, category, ingredients } = request.body;
+      const { filename: imageFileName } = request.file;
 
-      if (!name || !description || !price || !category || !ingredients) {
+      const diskStorage = new DiskStorage();
+
+      const filename = await diskStorage.saveFile(imageFileName);
+
+      if (
+        !name ||
+        !description ||
+        !price ||
+        !category ||
+        !ingredients ||
+        !imageFileName
+      ) {
         throw new AppError(
           "É necessário informar todos os dados para cadastrar o prato.",
           400
@@ -14,13 +27,15 @@ class DishesController {
       }
 
       const [dish_id] = await knex("dishes").insert({
+        image: filename,
         name,
         description,
         category,
         price,
       });
 
-      const ingredientsInsert = ingredients.map((ingredient) => {
+      const ingredientsArray = ingredients.split(",");
+      const ingredientsInsert = ingredientsArray.map((ingredient) => {
         return {
           dish_id,
           name: ingredient,

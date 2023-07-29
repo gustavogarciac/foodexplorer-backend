@@ -3,12 +3,14 @@ require("dotenv").config();
 
 const AppError = require("./utils/AppError");
 const cors = require("cors");
+const uploadsConfig = require("./configs/upload");
 
 const express = require("express");
 const server = express();
 
 server.use(cors());
 server.use(express.json());
+server.use("/files", express.static(uploadsConfig.UPLOADS_FOLDER));
 const router = require("./routes");
 
 server.use(router);
