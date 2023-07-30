@@ -11,7 +11,7 @@ class UsersController {
         throw new AppError("Preencha todos os campos para continuar.", 400);
       }
 
-      const passwordLength = password.length <= 8;
+      const passwordLength = password.length < 8;
       if (passwordLength) {
         throw new AppError("A senha deve ter ao menos 8 caracteres.", 400);
       }
