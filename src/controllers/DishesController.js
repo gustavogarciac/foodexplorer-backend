@@ -80,11 +80,16 @@ class DishesController {
           "dishes.price",
           "dishes.image",
         ])
-        .whereLike("dishes.name", `%${name}%`)
-        .whereIn("ingredients.name", filterIngredients)
+        .whereLike("ingredients.name", `%${filterIngredients}%`)
         .innerJoin("dishes", "dishes.id", "ingredients.dish_id")
         .groupBy("dishes.id")
         .orderBy("dishes.name");
+
+      if (dishes.length === 0) {
+        dishes = await knex("dishes")
+          .whereLike("name", `%${name}%`)
+          .orderBy("name");
+      }
     } else {
       dishes = await knex("dishes")
         .whereLike("name", `%${name}%`)
